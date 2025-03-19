@@ -121,7 +121,15 @@ class PDEnet(nn.Module):
         return y
 
 def A(x):
-    return (x[1] * torch.sin(np.pi * x[0]))
+#    return (x[1] * torch.sin(np.pi * x[0]))
+     if x[1] == 1.0:
+         return torch.sin(np.pi * x[0])
+     else:
+         if x[1] == 0.0:
+             return 0.0
+         else:
+             return x[1] * torch.sin(np.pi * x[0])
+
 
 def psy_trial(x, net_out):
     return A(x) + x[0] * (1 - x[0]) * x[1] * (1 - x[1]) * net_out
