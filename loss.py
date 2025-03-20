@@ -6,7 +6,8 @@ from torch.autograd import grad
 # def
 
 def get_rhs(x, y,pde,psy_trial,f):
-    loss_sum = 0.
+    rhs = torch.zeros(x.shape[0],y.shape[0])
+
 
     for i,xi in enumerate(x):
         for j,yi in enumerate(y):
@@ -21,12 +22,12 @@ def get_rhs(x, y,pde,psy_trial,f):
             net_out_jacobian = jacobian(pde.forward,input_point,create_graph=True)
             # jac1  = get_jacobian(pde.forward,input_point,2)
             net_out_hessian = hessian(pde.forward,input_point,create_graph=True)
-            psy_t = psy_trial(input_point, net_out)
+            psy_t = psy_trial(input_point)
 
-            inputs = (input_point, net_out)
+            inputs = (input_point)
             psy_t_jacobian = jacobian(psy_trial, inputs,create_graph=True)[0]
             psy_t_hessian  = hessian(psy_trial,inputs,create_graph=True)
-            psy_t_hessian = psy_t_hessian[0][0]
+            #psy_t_hessian = psy_t_hessian[0][0]
             # acobian(jacobian(psy_trial))(input_point, net_out
 
             gradient_of_trial_d2x = psy_t_hessian[0][0]

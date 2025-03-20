@@ -124,6 +124,9 @@ net_out
 psy_t = psy_trial(input_point, net_out)
 print(psy_t)
 
+from loss import get_rhs
+rhs = get_rhs(x_space, y_space,pde,analytic_solution,f)
+
 loss = loss_function(x_space, y_space,pde,psy_trial,f)
 loss.backward()
 print(x_space.grad)
