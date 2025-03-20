@@ -158,7 +158,7 @@ for i, x in enumerate(x_space):
 
         psy_t = psy_trial(input_point, net_out)
         surface[i][j] = psy_t
-        an_surface[i][j] = analytic_solution([x, y])
+        an_surface[i][j] = analytic_solution(torch.tensor([x, y]))
 diff = np.max(np.abs(surface-an_surface))
 print(diff)
 
