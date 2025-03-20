@@ -30,10 +30,7 @@ from mpl_toolkits.mplot3d import Axes3D
 def f(x):
     return 0.
 
-def analytic_solution(x):
-    sol =  (1 / (np.exp(np.pi) - np.exp(-np.pi))) * \
-           np.sin(np.pi * x[0]) * (np.exp(np.pi * x[1]) - np.exp(-np.pi * x[1]))
-    return sol
+from analytic import analytic_solution
 
 
 from loss import loss_function
