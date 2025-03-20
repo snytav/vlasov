@@ -30,10 +30,36 @@ from mpl_toolkits.mplot3d import Axes3D
 def f(x):
     return 0.
 
+
+from convection_basic import linear_convection_solve
+
+c = 1.0
+Lx = 1.0
+
+nx = 40
+ny = 5
+Lt = ny*0.025
+
+
+u,u2D = linear_convection_solve(c,Lx,nx+1,Lt,ny)
+
+dx = Lx / nx
+dy = Lt / ny
+x_space = np.linspace(0, Lx, nx)
+y_space = np.linspace(0, Lt, ny)
+
+
 def analytic_solution(x):
-    sol =  (1 / (np.exp(np.pi) - np.exp(-np.pi))) * \
-           np.sin(np.pi * x[0]) * (np.exp(np.pi * x[1]) - np.exp(-np.pi * x[1]))
-    return sol
+    ix = int(np.where(x_space == x[0])[0])
+    iy = int(np.where(y_space == x[1])[0])
+    ansol = u2D[iy][ix]
+    # if not isinstance(t,np.float64):
+    #     qq = 0
+    return ansol
+# def analytic_solution(x):
+#     sol =  (1 / (np.exp(np.pi) - np.exp(-np.pi))) * \
+#            np.sin(np.pi * x[0]) * (np.exp(np.pi * x[1]) - np.exp(-np.pi * x[1]))
+#     return sol
 
 from torch.autograd.functional import jacobian
 from torch.autograd.functional import hessian
@@ -122,13 +148,10 @@ class PDEnet(nn.Module):
 
 def A(x):
 #    return (x[1] * torch.sin(np.pi * x[0]))
-     if x[1] == 1.0:
-         return torch.sin(np.pi * x[0])
+     if x[1] == Lt or x[1] == 0.0 or x[0] == 0.0 or x[0]== Lx:
+         return analytic_solution(x)
      else:
-         if x[1] == 0.0:
-             return 0.0
-         else:
-             return x[1] * torch.sin(np.pi * x[0])
+         return 0.0
 
 
 def psy_trial(x, net_out):
@@ -137,11 +160,11 @@ def psy_trial(x, net_out):
 nx = 40
 ny = 5
 pde = PDEnet(nx)
-dx = 1. / nx
-dy = 1. / ny
+# dx = 1. / nx
+# dy = 1. / ny
 
-x_space = torch.linspace(0, 1, nx).double()
-y_space = torch.linspace(0, 1, ny).double()
+x_space = torch.linspace(0, Lx, nx).double()
+y_space = torch.linspace(0, Lt, ny).double()
 print("CUDA GPU:", torch.cuda.is_available())
 if torch.cuda.is_available():
   print(torch.device)
@@ -212,7 +235,7 @@ print(diff)
 
 import matplotlib.pyplot as plt
 import numpy as np
-fig = plt.figure()
+# fig = plt.figure()
 fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 X, Y = np.meshgrid(x_space.numpy(), y_space.numpy())
 surf = ax.plot_surface(X, Y, surface.T, rstride=1, cstride=1, cmap=cm.viridis,
