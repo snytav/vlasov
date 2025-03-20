@@ -94,8 +94,8 @@ def loss_function(x, y,pde,psy_trial,f):
 
 import numpy as np
 
-w0 = np.loadtxt('w0.out')
-w1 = np.loadtxt('w1.out')
+# w0 = np.loadtxt('w0.out')
+# w1 = np.loadtxt('w1.out')
 
 import torch.nn as nn
 # нейронная сеть для решения уравнения Пуассона
@@ -215,7 +215,7 @@ import numpy as np
 fig = plt.figure()
 fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 X, Y = np.meshgrid(x_space.numpy(), y_space.numpy())
-surf = ax.plot_surface(X, Y, surface, rstride=1, cstride=1, cmap=cm.viridis,
+surf = ax.plot_surface(X, Y, surface.T, rstride=1, cstride=1, cmap=cm.viridis,
                        linewidth=0, antialiased=False)
 plt.title('Neural solution')
 plt.savefig('neural.png')
@@ -223,7 +223,7 @@ plt.savefig('neural.png')
 fig = plt.figure()
 fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 X, Y = np.meshgrid(x_space.numpy(), y_space.numpy())
-surf = ax.plot_surface(X, Y, an_surface, rstride=1, cstride=1, cmap=cm.viridis,
+surf = ax.plot_surface(X, Y, an_surface.T, rstride=1, cstride=1, cmap=cm.viridis,
                        linewidth=0, antialiased=False)
 plt.title('Analytic solution')
 plt.savefig('analytic.png')
