@@ -155,7 +155,7 @@ def A(x):
 
 
 def psy_trial(x, net_out):
-    return A(x) + x[0] * (1 - x[0]) * x[1] * (1 - x[1]) * net_out
+    return A(x) + x[0] * (Lx - x[0]) * x[1] * (Lt - x[1]) * net_out
 
 nx = 40
 ny = 5
