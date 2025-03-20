@@ -134,8 +134,8 @@ def A(x):
 def psy_trial(x, net_out):
     return A(x) + x[0] * (1 - x[0]) * x[1] * (1 - x[1]) * net_out
 
-nx = 10
-ny = 20
+nx = 40
+ny = 5
 pde = PDEnet(nx)
 dx = 1. / nx
 dy = 1. / ny
