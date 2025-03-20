@@ -109,6 +109,37 @@ def loss_function(x, y,pde,psy_trial,f):
 
     return loss_sum
 
+def loss_vlasov(x, y,pde,psy_trial,f):
+    loss_sum = 0.
+
+    for xi in x:
+        for yi in y:
+            input_point = torch.Tensor([xi, yi])
+            input_point.requires_grad_()
+
+            net_out = pde.forward(input_point)
+
+            net_out_jacobian = jacobian(pde.forward, input_point, create_graph=True)
+            #net_out_hessian = jacobian(jacobian(neural_network_x))(input_point)
+
+            psy_t = psy_trial(input_point, net_out)
+            inputs = (input_point, net_out)
+            psy_t_jacobian = jacobian(psy_trial, inputs,create_graph=True)
+            # psy_t_hessian = jacobian(jacobian(psy_trial))(input_point, net_out)
+
+            gradient_of_trial_dx = psy_t_jacobian[0][0][0][0]
+            gradient_of_trial_dy = psy_t_jacobian[0][0][0][1]
+
+            # gradient_of_trial_d2x = psy_t_hessian[0][0]
+            # gradient_of_trial_d2y = psy_t_hessian[1][1]
+
+            func = f(input_point) # right part function
+
+            err_sqr = ((gradient_of_trial_dx + gradient_of_trial_dy) - func)**2
+            loss_sum += err_sqr
+
+    return loss_sum
+
 # from google.colab import drive
 # drive.mount('/content/drive')
 #
@@ -194,8 +225,9 @@ net_out
 
 psy_t = psy_trial(input_point, net_out)
 print(psy_t)
+surface = np.zeros((nx,ny))
 
-loss = loss_function(x_space, y_space,pde,psy_trial,f)
+loss = loss_vlasov(x_space, y_space,pde,psy_trial,f)
 loss.backward()
 print(x_space.grad)
 
@@ -203,23 +235,38 @@ lmb = 0.001
 optimizer = torch.optim.SGD(pde.parameters(), lr=lmb)
 import time
 t1 = time.time()
-for i in range(100):
+for n in range(100):
     #print('begin ',i,loss.item())
     optimizer.zero_grad()
     #print('zero grad ',i,loss.item())
     #print(x_space.device,y_space.device)
-    loss = loss_function(x_space, y_space,pde,psy_trial,f)
+    loss = loss_vlasov(x_space, y_space,pde,psy_trial,f)
     #print(loss.device)
-    print(i,loss.item())
+    print(n,loss.item())
     loss.backward(retain_graph=True)
     #print('loop end ',i,loss.item())
     optimizer.step()
+    for i, x in enumerate(x_space):
+        for j, y in enumerate(y_space):
+            input_point = torch.Tensor([x, y])
+            input_point.requires_grad_()
+            net_out = pde.forward(input_point)
 
-    print('step ',i,loss.item())
+            psy_t = psy_trial(input_point, net_out)
+            surface[i][j] = psy_t
+
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+    X, Y = np.meshgrid(x_space.numpy(), y_space.numpy())
+    surf = ax.plot_surface(X, Y, surface.T, rstride=1, cstride=1, cmap=cm.viridis,
+                           linewidth=0, antialiased=False)
+    plt.title('Neural solution, epoch '+str(n))
+    plt.savefig('epoch_'+str(n)+'_.png')
+
+    print('step ',n,loss.item())
 t2 = time.time()
 print('computation time ',t2-t1)
 
-surface = np.zeros((nx,ny))
+
 an_surface = np.zeros((nx,ny))
 for i, x in enumerate(x_space):
     for j, y in enumerate(y_space):
@@ -253,6 +300,8 @@ plt.savefig('analytic.png')
 
 from sklearn.metrics import mean_absolute_percentage_error
 mape = mean_absolute_percentage_error(an_surface, surface)
+from sklearn.metrics import mean_absolute_error
+mae  = mean_absolute_error(an_surface, surface)
 print(mape)
 
 import numpy as np
